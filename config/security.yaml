@@ -1,0 +1,29 @@
+# Security Document Configuration
+# Minimal processing that preserves security features
+
+pipeline:
+  # Document type detection
+  document_type: "auto"  # passport, id_card, certificate, currency, auto
+  security_mode: true
+
+  # Preservation settings (strict)
+  preserve_background: true
+  preserve_color: true
+  max_denoising: 3  # Minimal denoising kernel
+  allow_binarization: false
+  allow_contrast_boost: false
+  watermark_threshold: 0.95
+
+  # Only basic corrections
+  border_threshold: 50
+  deskew_enabled: true  # Only if > 2 degrees
+  noise_reduction: true  # Very gentle
+  contrast_enhancement: false  # Disabled to preserve features
+
+  # Output settings
+  output_dpi: 300
+  output_format: "pdfa"
+  preserve_metadata: true
+
+  # GPU optional
+  gpu: false

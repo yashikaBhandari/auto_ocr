@@ -1,0 +1,156 @@
+. Requirements ### Objective Develop an automated OCR preprocessing tool that enhances the quality of scanned or photographed documents before OCR. The system will detect and correct common image issues automatically, with minimal manual input, and output a clean, OCR-ready PDF. ### Core Requirements 1. Input: Single or multi-page PDF (scanned or low-quality). 2. Processing Pipeline: Automatic, condition-based execution of preprocessing tasks. 3. Output: High-quality, OCR-ready PDF. 4. Frontend: Simple React demo app to visualize pre/post images. 5. API: REST-based backend service built using FastAPI or Flask. 6. Test Harness: Compare OCR results before and after preprocessing using Tesseract. 2. Plan — Work Breakdown Structure (3 Weeks, 2 Developers) ### Phase 1: Setup & Planning (Day 1–2) - Environment setup: Python 3.11, OpenCV, Tesseract, FastAPI, Streamlit. - GitHub repo setup with CI/CD (GitHub Actions). - API schema and input/output contracts finalized. ### Phase 2: Core Preprocessing Modules (Day 3–10) 1. Black Edge Removal: Detect, crop, and preview. 2. Language Detection & Orientation: Detect language, rotate page. 3. Deskew & Perspective Correction: Correct angle and perspective. 4. Despeckle & Denoise: Reduce noise, enhance clarity. 5. Image Enhancement: Sharpen text, improve contrast. ### Phase 3: API & Integration (Day 11–13) - Build FastAPI endpoints and orchestrate the modules. - Integrate visualization via Streamlit or React UI. ### Phase 4: Test Harness (Day 14–15) - Run OCR before/after preprocessing. - Compare text accuracy and generate a report. ### Phase 5: Review & Demo - Final testing, refactoring, documentation, and demo readiness. 3. Detailed Design ### Technologies - Languages: Python 3.11, JavaScript (React) - Libraries: OpenCV, PyTesseract, NumPy, FastAPI, Streamlit, fastText, scikit-image - OCR Engine: Tesseract v5.x - Deployment: Docker containers ### Tool & Library Mapping | Task | Tool | License | GitHub Repo | |------|------|----------|-------------| | Black Edge Removal | OpenCV | Apache 2.0 | https://github.com/opencv/opencv | | Language Detection | fastText | MIT | https://github.com/facebookresearch/fastText | | Deskew & Perspective | OpenCV + Scikit-Image | Apache 2.0 | https://github.com/scikit-image/scikit-image | | Denoise | OpenCV | Apache 2.0 | https://github.com/opencv/opencv | | Image Enhancement | OpenCV + NumPy | Apache 2.0 | https://github.com/opencv/opencv | | OCR Comparison | PyTesseract | Apache 2.0 | https://github.com/madmaze/pytesseract | ### File Structure autoocr/ ├── api/ │ ├── main.py │ ├── modules/ │ ├── pipeline.py │ ├── utils/ ├── frontend/ │ ├── react-app/ ├── tests/ │ ├── test_harness.py └── docs/ ├── architecture.png ├── README.md 4. Tech Architecture ### Overview The AutoOCR system includes: 1. Backend API (FastAPI) 2. React Frontend for demo 3. Independent preprocessing modules 4. Test harness for OCR quality comparison ### Flow 1. User uploads a PDF (React frontend) 2. Backend pipeline processes each page 3. Output is displayed for before/after comparison 4. Test harness measures OCR quality improvement ### Deployment - Dockerized microservices - One container for FastAPI backend, one for React frontend - Optional Streamlit app for internal inspection mujhe yeh poora project smjha ache se ek ek line explain kar kya bola hai kya chiye in depth bta. ..
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+AutoOCR pipeline = 2 stages:
+Stage	Kaam	Modules
+🕵️ Detection Phase	Detect karna ki kis image me kya problem hai (crooked, noisy, blurred, etc.)	Detection logic of each module
+🧹 Preprocessing Phase	Fix karna detected issues automatically	Processing logic of each module
+So, system har page ke liye yeh karta hai:
+
+Detect issues  →  Decide which modules to run  →  Apply fixes  →  Output cleaned image
+
+🔍 2️⃣ Detection Phase (How It Works)
+Detection ka main aim hai unnecessary preprocessing avoid karnataaki fast aur accurate processing ho.
+Har module ka apna detection logic hota hai —chalo ek ek karke samjhte hain 👇
+
+🧩 A. Black Edge Detection (EdgeCropModule)
+Problem:Scanner ya mobile se scan karte waqt borders me black patches aa jaate hain.
+Detection Logic:
+1. Image ko grayscale me convert karogray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+2. Threshold apply karo (dark area detect karne ke liye)_, thresh = cv2.threshold(gray, 10, 255, cv2.THRESH_BINARY)
+3. Contour find karo (document boundaries locate karne ke liye)contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+4. Agar outer contour area > 90% of image area → no borderwarna → black edge detected ✅
+
+🧩 B. Orientation Detection (OrientationModule)
+Problem:Kabhi document rotated hota hai (90°, 180°), OCR galat padhta hai.
+Detection Logic:
+1. Tesseract OSD (Orientation & Script Detection) use karoimport pytesseract
+2. osd = pytesseract.image_to_osd(img)
+3. angle = re.search('(?<=Rotate: )\d+', osd).group(0)
+4.
+5. Agar angle ≠ 0 → rotate karna hoga.
+Detected info: rotation_angle = 90 / 180 / 270
+
+🧩 C. Deskew Detection (DeskewModule)
+Problem:Image tilted hoti hai (scanner skew or photo angle).
+Detection Logic:
+1. Grayscale + edge detection (Canny)edges = cv2.Canny(gray, 50, 150)
+2.
+3. Hough Line Transform se text line ka slope nikaalolines = cv2.HoughLines(edges, 1, np.pi/180, 200)
+4.
+5. Average angle compute karoAgar |angle| > 0.5° → deskew required ✅
+
+🧩 D. Noise Detection (DenoiseModule)
+Problem:Old scans me “salt and pepper” noise ya compression blocks.
+Detection Logic:
+1. Image ke variance of Laplacian compute karo (texture sharpness)noise_level = cv2.Laplacian(gray, cv2.CV_64F).var()
+2.
+3. Agar variance < threshold (say 50) → noise high hai ✅Else clean hai, skip karo.
+
+🧩 E. Low Contrast Detection (EnhanceModule)
+Problem:Text dull ya faded hota hai, OCR fail hota hai.
+Detection Logic:
+1. Histogram analysis karo (image brightness spread)hist = cv2.calcHist([gray],[0],None,[256],[0,256])
+2. contrast = hist.std()
+3.
+4. Agar contrast < threshold (like 40) → enhancement required ✅
+
+⚙️ 3️⃣ Preprocessing Phase (Fixing Detected Issues)
+Agar detection ke baad module “required” mark hota hai, tab preprocessing apply hoti hai.
+Chalo ek ek fix dekhte hain:
+
+For edge removal i want  to use masking
+
+Masking
+Masking matlab:
+* Black border detect karo
+* Usko ek mask se hide karo (fill with white or black)
+* Image ka size same rakho
+Pros:
+* Safe — text area kabhi cut nahi hota
+* Page layout same rehta hai
+* Compatible with deskew, perspective correction
+* OCR still ignores masked area
+
+
+🧩 2. Orientation Fix
+Approach: rotate image to 0°
+
+rotated = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+Angle detected from Tesseract OSD decides direction.
+
+🧩 3. Deskew Correction
+Approach: affine transform to straighten text
+
+M = cv2.getRotationMatrix2D(center, -angle, 1)
+deskewed = cv2.warpAffine(img, M, (w, h), flags=cv2.INTER_CUBIC)
+
+🧩 4. Denoise / Despeckle
+Approach: Non-local means filtering (best for text images)
+
+denoised = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 21)
+Alternate:cv2.medianBlur() for salt-and-pepper noise.
+
+🧩 5. Enhancement (Sharpen + CLAHE)
+Approach:
+* CLAHE (Contrast Limited Adaptive Histogram Equalization)
+* Unsharp Mask
+
+clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+enhanced = clahe.apply(gray)
+Then sharpening:
+
+sharpened = cv2.addWeighted(gray, 1.5, blurred, -0.5, 0)
+
+🧩 6. Binarization (Final OCR-ready format)
+Approach: Adaptive thresholding
+
+binarized = cv2.adaptiveThreshold(gray, 255,
+    cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 10)
+✅ Output → high-contrast black-white textPerfect for OCR.
+
+🔄 4️⃣ Full Flow in Action (Inside Orchestrator)
+
+For each page in PDF:
+    image = load_page()
+    run detection modules:
+        edge? rotate? skewed? noisy?
+    if detected:
+        apply those fixes
+    save processed image
+combine → final PDF
+So orchestrator kuch aise karta hai:
+
+for module_name in pipeline_order:
+    if module.detect(image):
+        result = module.process(image)
+
+🧩 5️⃣ Example of a Real Case
+📄 Input: scanned page tilted with dark bordersPipeline detects:
+* black edges ✅
+* skew angle 3.2° ✅
+* low contrast ✅
+It applies:
+* crop → deskew → enhanceand returns a sharp, aligned, OCR-ready page.
+
+🔥 6️⃣ Automatic vs Manual Control
+* Automatic mode: system self-detects and applies needed fixes.
+* Manual override: user toggles modules in frontend (checkboxes like "Apply Deskew").
+So tu dono options rakh sakti hai frontend me.

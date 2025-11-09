@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.build/
+.dist/
+.env
+.venv
+venv/
+.env*/
+.idea/
+.mypy_cache/
+.pytest_cache/
+coverage.xml
+htmlcov/
+
+# Node
+node_modules/
+*.log
+.build
+.cache
+
+# OS / Misc
+.DS_Store
+Thumbs.db
+
+# Model / Large Artifacts
+*.bin
+*.model
+*.vec
+models/
+
+# PDFs / Generated Outputs
+outputs/
+processed/
+
+# VSCode
+.vscode/

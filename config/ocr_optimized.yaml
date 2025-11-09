@@ -1,0 +1,38 @@
+# OCR-Optimized Configuration
+# Aggressive security feature removal for maximum OCR accuracy
+# ⚠️  Use only with legal authorization
+
+pipeline:
+  # Security feature removal
+  remove_watermarks: true
+  remove_guilloche: true
+  flatten_holograms: true
+  mrz_priority: true
+  text_enhancement: "aggressive"
+  security_feature_threshold: 0.85
+
+  # Legal compliance
+  legal_compliance_check: true
+
+  # MRZ preservation
+  preserve_mrz: true
+
+  # Core corrections (enabled)
+  border_threshold: 50
+  deskew_enabled: true
+  noise_reduction: true
+  speck_size: 5  # Smaller for aggressive cleanup
+  contrast_enhancement: true
+
+  # Binarization and enhancement
+  allow_binarization: true
+  allow_contrast_boost: true
+  preserve_color: false
+
+  # Output settings
+  output_dpi: 400  # Higher DPI for OCR
+  output_format: "tiff"
+  preserve_metadata: true
+
+  # GPU recommended for faster processing
+  gpu: auto

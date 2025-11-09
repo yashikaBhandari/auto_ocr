@@ -1,0 +1,31 @@
+# Standard Processing Configuration
+# For general document preprocessing
+
+pipeline:
+  # Core corrections
+  border_threshold: 50
+  deskew_enabled: true
+  noise_reduction: true
+  speck_size: 10
+  contrast_enhancement: true
+
+  # Advanced AI features (disabled by default)
+  ai_warp_correction: false
+  finger_removal: false
+
+  # Preservation settings
+  preserve_barcodes: true
+  preserve_qrcodes: true
+  preserve_signatures: false
+
+  # Output settings
+  output_dpi: 300
+  output_format: "pdfa"  # pdfa, tiff, png
+  preserve_metadata: true
+
+  # Masking vs cropping
+  masking_enabled: true
+  mask_output_path: null
+
+  # GPU settings
+  gpu: false
