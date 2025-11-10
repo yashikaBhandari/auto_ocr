@@ -35,14 +35,42 @@ class DenoiseModule(BaseModule):
 
     def process(self, image, detect_meta: Dict[str, Any]):
         strength = 10 if detect_meta.get("high_noise") else 5
+        
+        # Step 1: Remove background dots using morphological operations
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        
+        # Apply adaptive thresholding to separate text from background
+        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, 
+                                      cv2.THRESH_BINARY, 25, 10)
+        
+        # Remove small dots using morphological opening (keeps text, removes small dots)
+        kernel = np.ones((2, 2), np.uint8)
+        dots_removed = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=2)
+        
+        # Apply median blur to smooth remaining noise
+        smoothed = cv2.medianBlur(dots_removed, 3)
+        
+        # Convert back to BGR for further processing
+        dots_cleaned = cv2.cvtColor(smoothed, cv2.COLOR_GRAY2BGR)
+        
+        # Step 2: Apply regular denoising on the dots-removed image
         try:
-            denoised = cv2.fastNlMeansDenoisingColored(image, None, strength, strength, 7, 21)
-            return denoised, {"applied": True, "method": "fastNlMeans", "strength": strength}
+            denoised = cv2.fastNlMeansDenoisingColored(dots_cleaned, None, strength, strength, 7, 21)
+            return denoised, {
+                "applied": True, 
+                "method": "fastNlMeans + dots_removal", 
+                "strength": strength,
+                "dots_removed": True
+            }
         except Exception:  # pylint: disable=broad-except
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             k = 5 if detect_meta.get("high_noise") else 3
-            median = cv2.medianBlur(gray, k)
+            median = cv2.medianBlur(smoothed, k)
             restored = cv2.cvtColor(median, cv2.COLOR_GRAY2BGR)
-            return restored, {"applied": True, "method": "median_fallback", "kernel": k}
+            return restored, {
+                "applied": True, 
+                "method": "median_fallback + dots_removal", 
+                "kernel": k,
+                "dots_removed": True
+            }
 
 __all__ = ["DenoiseModule"]

@@ -19,6 +19,7 @@ from .modules.orientation import OrientationModule
 from .modules.perspective import PerspectiveModule
 from .modules.language import LanguageModule
 from .modules.deskew import DeskewModule
+from .modules.dots_removal import DotsRemovalModule
 from .modules.denoise import DenoiseModule
 from .modules.enhance import EnhanceModule
 from .modules.text_refine import TextRefineModule
@@ -33,6 +34,7 @@ class Pipeline:
                 PerspectiveModule(),      # perspective flatten (if needed)
                 LanguageModule(),         # detect language (no image change)
                 DeskewModule(),           # straighten slight skew
+                DotsRemovalModule(),      # remove background dots/speckles
                 DenoiseModule(),          # reduce noise if needed
                 EnhanceModule(),          # contrast + sharpen / brightness normalize
                 TextRefineModule(),       # speckle cleanup & morphological refine
