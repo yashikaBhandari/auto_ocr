@@ -23,20 +23,34 @@ from .modules.denoise import DenoiseModule
 from .modules.enhance import EnhanceModule
 from .modules.text_refine import TextRefineModule
 from .modules.binarize import BinarizeModule
+from .modules.de_raster import DeRasterModule
+from .modules.background_clean import BackgroundCleanModule
+from .modules.sharpen import SharpenModule
+from .modules.smooth import SmoothModule
+from .modules.text_segmentation import TextSegmentationModule
+from .modules.artifact_removal import ArtifactRemovalModule
+from .modules.color_correction import ColorCorrectionModule
 
 class Pipeline:
     def __init__(self, modules: List[BaseModule] | None = None):
         if modules is None:
             modules = [
-                EdgeMaskModule(),         # mask black borders
-                OrientationModule(),      # rotate to upright
-                PerspectiveModule(),      # perspective flatten (if needed)
-                LanguageModule(),         # detect language (no image change)
-                DeskewModule(),           # straighten slight skew
-                DenoiseModule(),          # reduce noise if needed
-                EnhanceModule(),          # contrast + sharpen / brightness normalize
-                TextRefineModule(),       # speckle cleanup & morphological refine
-                BinarizeModule(),         # final adaptive threshold (Sauvola/adaptive)
+                EdgeMaskModule(),              # mask black borders
+                OrientationModule(),           # rotate to upright
+                PerspectiveModule(),           # perspective flatten (if needed)
+                LanguageModule(),              # detect language (no image change)
+                DeskewModule(),                # straighten slight skew
+                DeRasterModule(),              # remove grids, stamps, watermarks
+                DenoiseModule(),               # reduce noise if needed
+                BackgroundCleanModule(),       # remove shadows, fix lighting, bleed-through
+                EnhanceModule(),               # contrast + sharpen / brightness normalize
+                TextRefineModule(),            # speckle cleanup & morphological refine
+                SharpenModule(),               # edge enhancement and detail refinement
+                SmoothModule(),                # Gaussian, median, bilateral smoothing
+                BinarizeModule(),              # final adaptive threshold (Sauvola/adaptive)
+                ColorCorrectionModule(),       # white balance, faded ink, color normalization
+                TextSegmentationModule(),      # line, word, character segmentation
+                ArtifactRemovalModule(),       # fold marks, tape, pattern removal
             ]
         self.modules = modules
 
