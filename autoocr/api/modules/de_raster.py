@@ -46,13 +46,13 @@ class DeRasterModule(BaseModule):
         total_energy = np.sum(magnitude)
         watermark_ratio = low_freq_energy / (total_energy + 1e-6)
 
-        should_process = grid_detected or stamp_count > 2 or watermark_ratio > 0.3
+        should_process = bool(grid_detected or stamp_count > 2 or watermark_ratio > 0.3)
 
         return should_process, {
-            "grid_detected": grid_detected,
-            "grid_line_count": len(lines) if lines is not None else 0,
-            "stamp_count": stamp_count,
-            "watermark_ratio": round(watermark_ratio, 3),
+            "grid_detected": bool(grid_detected),
+            "grid_line_count": int(len(lines)) if lines is not None else 0,
+            "stamp_count": int(stamp_count),
+            "watermark_ratio": float(round(watermark_ratio, 3)),
         }
 
     def process(self, image, detect_meta: Dict[str, Any]) -> Tuple[Any, Dict[str, Any]]:
@@ -73,9 +73,9 @@ class DeRasterModule(BaseModule):
             result = self._remove_watermark(result)
 
         return result, {
-            "grid_removed": detect_meta.get("grid_detected", False),
-            "stamps_removed": detect_meta.get("stamp_count", 0) > 2,
-            "watermark_removed": detect_meta.get("watermark_ratio", 0) > 0.3,
+            "grid_removed": bool(detect_meta.get("grid_detected", False)),
+            "stamps_removed": bool(detect_meta.get("stamp_count", 0) > 2),
+            "watermark_removed": bool(detect_meta.get("watermark_ratio", 0) > 0.3),
             "method": "Hough_lines + Contour + FFT"
         }
 

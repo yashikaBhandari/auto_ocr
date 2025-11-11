@@ -35,21 +35,21 @@ class ColorCorrectionModule(BaseModule):
         b_r_diff = abs(b_mean - r_mean)
         g_r_diff = abs(g_mean - r_mean)
 
-        has_color_cast = max(b_g_diff, b_r_diff, g_r_diff) > 30
+        has_color_cast = bool(max(b_g_diff, b_r_diff, g_r_diff) > 30)
 
         # Check for fading (low overall intensity)
         intensity = (b_mean + g_mean + r_mean) / 3
-        is_faded = intensity < 100
+        is_faded = bool(intensity < 100)
 
-        should_process = has_color_cast or is_faded
+        should_process = bool(has_color_cast or is_faded)
 
         return should_process, {
             "color_cast_detected": has_color_cast,
             "fading_detected": is_faded,
-            "b_mean": round(b_mean, 2),
-            "g_mean": round(g_mean, 2),
-            "r_mean": round(r_mean, 2),
-            "intensity": round(intensity, 2),
+            "b_mean": float(round(b_mean, 2)),
+            "g_mean": float(round(g_mean, 2)),
+            "r_mean": float(round(r_mean, 2)),
+            "intensity": float(round(intensity, 2)),
         }
 
     def process(self, image, detect_meta: Dict[str, Any]) -> Tuple[Any, Dict[str, Any]]:
@@ -74,8 +74,8 @@ class ColorCorrectionModule(BaseModule):
         result = self._normalize_color(result)
 
         return result, {
-            "white_balance_fixed": detect_meta.get("color_cast_detected", False),
-            "faded_ink_restored": detect_meta.get("fading_detected", False),
+            "white_balance_fixed": bool(detect_meta.get("color_cast_detected", False)),
+            "faded_ink_restored": bool(detect_meta.get("fading_detected", False)),
             "color_normalized": True,
             "method": "Gray_World + Contrast_Stretching + Histogram_Match"
         }

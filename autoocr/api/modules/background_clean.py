@@ -43,15 +43,15 @@ class BackgroundCleanModule(BaseModule):
         diff = cv2.absdiff(gray, blurred)
         bleed_ratio = np.sum(diff > 10) / (gray.shape[0] * gray.shape[1])
 
-        should_process = shadow_ratio > 0.1 or lighting_diff > 0.2 or bleed_ratio > 0.15
+        should_process = bool(shadow_ratio > 0.1 or lighting_diff > 0.2 or bleed_ratio > 0.15)
 
         return should_process, {
-            "shadow_ratio": round(shadow_ratio, 3),
-            "lighting_diff": round(lighting_diff, 3),
-            "bleed_ratio": round(bleed_ratio, 3),
-            "has_shadows": shadow_ratio > 0.1,
-            "has_uneven_lighting": lighting_diff > 0.2,
-            "has_bleed_through": bleed_ratio > 0.15,
+            "shadow_ratio": float(round(shadow_ratio, 3)),
+            "lighting_diff": float(round(lighting_diff, 3)),
+            "bleed_ratio": float(round(bleed_ratio, 3)),
+            "has_shadows": bool(shadow_ratio > 0.1),
+            "has_uneven_lighting": bool(lighting_diff > 0.2),
+            "has_bleed_through": bool(bleed_ratio > 0.15),
         }
 
     def process(self, image, detect_meta: Dict[str, Any]) -> Tuple[Any, Dict[str, Any]]:
@@ -72,9 +72,9 @@ class BackgroundCleanModule(BaseModule):
             result = self._remove_bleed_through(result)
 
         return result, {
-            "shadows_removed": detect_meta.get("has_shadows", False),
-            "lighting_corrected": detect_meta.get("has_uneven_lighting", False),
-            "bleed_through_removed": detect_meta.get("has_bleed_through", False),
+            "shadows_removed": bool(detect_meta.get("has_shadows", False)),
+            "lighting_corrected": bool(detect_meta.get("has_uneven_lighting", False)),
+            "bleed_through_removed": bool(detect_meta.get("has_bleed_through", False)),
             "method": "Morphology + Illumination + Thresholding"
         }
 

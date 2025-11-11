@@ -51,14 +51,14 @@ class ArtifactRemovalModule(BaseModule):
 
         has_patterns = patterns > 0.01
 
-        should_process = fold_marks or tape_count > 1 or has_patterns
+        should_process = bool(fold_marks or tape_count > 1 or has_patterns)
 
         return should_process, {
-            "fold_marks_detected": fold_marks,
-            "fold_mark_count": len(lines) if lines is not None else 0,
-            "tape_count": tape_count,
-            "patterns_detected": has_patterns,
-            "pattern_ratio": round(patterns, 4),
+            "fold_marks_detected": bool(fold_marks),
+            "fold_mark_count": int(len(lines)) if lines is not None else 0,
+            "tape_count": int(tape_count),
+            "patterns_detected": bool(has_patterns),
+            "pattern_ratio": float(round(patterns, 4)),
         }
 
     def process(self, image, detect_meta: Dict[str, Any]) -> Tuple[Any, Dict[str, Any]]:
@@ -79,9 +79,9 @@ class ArtifactRemovalModule(BaseModule):
             result = self._suppress_patterns(result, gray)
 
         return result, {
-            "fold_marks_removed": detect_meta.get("fold_marks_detected", False),
-            "tape_removed": detect_meta.get("tape_count", 0) > 1,
-            "patterns_suppressed": detect_meta.get("patterns_detected", False),
+            "fold_marks_removed": bool(detect_meta.get("fold_marks_detected", False)),
+            "tape_removed": bool(detect_meta.get("tape_count", 0) > 1),
+            "patterns_suppressed": bool(detect_meta.get("patterns_detected", False)),
             "method": "Hough_lines + Contours + FFT_filtering"
         }
 

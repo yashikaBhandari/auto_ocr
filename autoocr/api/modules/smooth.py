@@ -25,10 +25,10 @@ class SmoothModule(BaseModule):
         graininess = np.mean(magnitude)
 
         # High gradient = grainy
-        is_grainy = graininess > 20
+        is_grainy = bool(graininess > 20)
 
         return is_grainy, {
-            "graininess": round(graininess, 2),
+            "graininess": float(round(graininess, 2)),
             "is_grainy": is_grainy,
         }
 

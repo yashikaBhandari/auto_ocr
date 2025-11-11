@@ -22,10 +22,10 @@ class SharpenModule(BaseModule):
         laplacian_var = float(cv2.Laplacian(gray, cv2.CV_64F).var())
 
         # Low variance = blurry
-        is_blurry = laplacian_var < 100
+        is_blurry = bool(laplacian_var < 100)
 
         return is_blurry, {
-            "laplacian_variance": round(laplacian_var, 2),
+            "laplacian_variance": float(round(laplacian_var, 2)),
             "is_blurry": is_blurry,
         }
 

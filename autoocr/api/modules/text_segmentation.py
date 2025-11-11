@@ -23,10 +23,10 @@ class TextSegmentationModule(BaseModule):
         text_pixels = np.sum(binary == 0)  # Black pixels = text
         text_ratio = text_pixels / (binary.shape[0] * binary.shape[1])
 
-        has_text = 0.05 < text_ratio < 0.95  # Reasonable amount of text
+        has_text = bool(0.05 < text_ratio < 0.95)  # Reasonable amount of text
 
         return has_text, {
-            "text_ratio": round(text_ratio, 3),
+            "text_ratio": float(round(text_ratio, 3)),
             "has_text": has_text,
         }
 
